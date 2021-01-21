@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SmartPhotoSliderView">
+        <attr name="android:width" />
+        <attr name="android:height" />
+        <attr name="progressColor" format="color"/>
+    </declare-styleable>
+
+</resources>

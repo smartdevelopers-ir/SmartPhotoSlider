@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<com.ortiz.touchview.TouchImageView
+    android:id="@+id/item_downloadable_image_imgImage"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    />
+    <View
+        android:id="@+id/item_downloadable_image_hover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        />
+    <androidx.appcompat.widget.AppCompatImageView
+       android:id="@+id/item_downloadable_image_download"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="@id/item_downloadable_image_loadingView"
+        app:layout_constraintStart_toStartOf="@id/item_downloadable_image_loadingView"
+        app:layout_constraintEnd_toEndOf="@id/item_downloadable_image_loadingView"
+        app:layout_constraintBottom_toBottomOf="@id/item_downloadable_image_loadingView"
+        app:layout_constraintDimensionRatio="1:1"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_download_white"
+        android:background="@drawable/download_bg"
+        />
+    <ir.smartdevelopers.smartprogressimageview.SmartProgressImageView
+        android:id="@+id/item_downloadable_image_loadingView"
+        android:layout_width="@dimen/SIS_download_icon_size"
+        android:layout_height="@dimen/SIS_download_icon_size"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        />
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/item_downloadable_image_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="item_downloadable_image_download,item_downloadable_image_hover,item_downloadable_image_loadingView"
+        />
+</androidx.constraintlayout.widget.ConstraintLayout>

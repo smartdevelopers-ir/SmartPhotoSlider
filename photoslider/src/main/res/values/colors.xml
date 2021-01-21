@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="activeDot">#2392E6</color>
+    <color name="deactivateDot">#757575</color>
+    <color name="SIS_colorLoading">#0584F4</color>
+</resources>
