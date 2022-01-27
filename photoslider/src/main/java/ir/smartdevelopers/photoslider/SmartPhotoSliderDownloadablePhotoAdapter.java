@@ -2,6 +2,7 @@ package ir.smartdevelopers.photoslider;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,12 +59,12 @@ public abstract class SmartPhotoSliderDownloadablePhotoAdapter extends BaseSmart
         Group downloadIconGroup=view.findViewById(R.id.item_downloadable_image_group);
         final SmartProgressImageView progressImageView=view.findViewById(R.id.item_downloadable_image_loadingView);
         progressImageView.setProgressNormalColor(progressColor);
-        final File downloadedImage=getDownloadedImage(getContext(),position);
+        final Uri downloadedImageUri=getDownloadedImage(getContext(),position);
 
-        if (downloadedImage!=null){
+        if (downloadedImageUri!=null){
             downloadIconGroup.setVisibility(View.GONE);
 
-                    Glide.with(touchImageView).load(downloadedImage.getPath())
+                    Glide.with(touchImageView).load(downloadedImageUri)
                             .into(touchImageView);
 
 
@@ -149,13 +150,13 @@ public abstract class SmartPhotoSliderDownloadablePhotoAdapter extends BaseSmart
         return view;
     }
 
-    public final void downloadCompleted(int position,File downloadedImage){
+    public final void downloadCompleted(int position,Uri downloadedImageUri){
         View view=parentPager.findViewWithTag(position);
         if (view!=null){
              TouchImageView touchImageView=view.findViewById(R.id.item_downloadable_image_imgImage);
             Group downloadIconGroup=view.findViewById(R.id.item_downloadable_image_group);
             downloadIconGroup.setVisibility(View.GONE);
-            Glide.with(getContext()).load(downloadedImage).into(touchImageView);
+            Glide.with(getContext()).load(downloadedImageUri).into(touchImageView);
         }
     }
     public final void downloadCompleted(int position){
@@ -181,7 +182,7 @@ public abstract class SmartPhotoSliderDownloadablePhotoAdapter extends BaseSmart
         mIsDownloading[pos]=false;
     }
     @Nullable
-    protected abstract File getDownloadedImage(Context context, int position);
+    protected abstract Uri getDownloadedImage(Context context, int position);
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
