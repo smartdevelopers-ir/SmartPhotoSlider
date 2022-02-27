@@ -13,6 +13,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.Group;
+import androidx.lifecycle.Lifecycle;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.bumptech.glide.request.Request;
@@ -52,14 +53,14 @@ public abstract class SmartPhotoSliderDownloadablePhotoAdapter extends BaseSmart
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
 
-        View view= LayoutInflater.from(getContext()).inflate(R.layout.item_downloadable_image_layout,container,false);
+        View view= LayoutInflater.from(container.getContext()).inflate(R.layout.item_downloadable_image_layout,container,false);
         final TouchImageView touchImageView=view.findViewById(R.id.item_downloadable_image_imgImage);
         View hover=view.findViewById(R.id.item_downloadable_image_hover);
         final ImageView imgDownload=view.findViewById(R.id.item_downloadable_image_download);
         Group downloadIconGroup=view.findViewById(R.id.item_downloadable_image_group);
         final SmartProgressImageView progressImageView=view.findViewById(R.id.item_downloadable_image_loadingView);
         progressImageView.setProgressNormalColor(progressColor);
-        final Uri downloadedImageUri=getDownloadedImage(getContext(),position);
+        final Uri downloadedImageUri=getDownloadedImage(container.getContext().getApplicationContext(),position);
 
         if (downloadedImageUri!=null){
             downloadIconGroup.setVisibility(View.GONE);
@@ -74,7 +75,7 @@ public abstract class SmartPhotoSliderDownloadablePhotoAdapter extends BaseSmart
                 imgDownload.setImageResource(R.drawable.ic_clear_24_white);
                 progressImageView.setVisibility(View.VISIBLE);
                 progressImageView.startLoading();
-                startDownload(getContext(),touchImageView, position);
+                startDownload(container.getContext().getApplicationContext(),touchImageView, position);
             }else {
                 imgDownload.setImageResource(R.drawable.ic_download_white);
                 progressImageView.stopAnimation();
@@ -91,13 +92,13 @@ public abstract class SmartPhotoSliderDownloadablePhotoAdapter extends BaseSmart
                     imgDownload.setImageResource(R.drawable.ic_download_white);
                     progressImageView.stopAnimation();
                     progressImageView.setVisibility(View.INVISIBLE);
-                    cancelDownload(getContext(),pos);
+                    cancelDownload(v.getContext().getApplicationContext(),pos);
                 }else {
                     //start download
                     imgDownload.setImageResource(R.drawable.ic_clear_24_white);
                     progressImageView.setVisibility(View.VISIBLE);
                     progressImageView.startLoading();
-                    startDownload(getContext(),touchImageView,pos);
+                    startDownload(v.getContext().getApplicationContext(),touchImageView,pos);
                 }
             }
         });
@@ -151,16 +152,23 @@ public abstract class SmartPhotoSliderDownloadablePhotoAdapter extends BaseSmart
     }
 
     public final void downloadCompleted(int position,Uri downloadedImageUri){
+        if (getLifecycleOwner()!=null && getLifecycleOwner().getLifecycle().getCurrentState() == Lifecycle.State.DESTROYED){
+            return;
+        }
         View view=parentPager.findViewWithTag(position);
         if (view!=null){
              TouchImageView touchImageView=view.findViewById(R.id.item_downloadable_image_imgImage);
             Group downloadIconGroup=view.findViewById(R.id.item_downloadable_image_group);
             downloadIconGroup.setVisibility(View.GONE);
-            Glide.with(getContext()).load(downloadedImageUri).into(touchImageView);
+            Glide.with(view.getContext()).load(downloadedImageUri).into(touchImageView);
         }
     }
     public final void downloadCompleted(int position){
-        downloadCompleted(position,getDownloadedImage(getContext(),position));
+        View view=parentPager.findViewWithTag(position);
+        if (view!=null){
+            downloadCompleted(position,getDownloadedImage(view.getContext().getApplicationContext(),position));
+        }
+
     }
     public final void downloadFailed(int position){
         View view=parentPager.findViewWithTag(position);

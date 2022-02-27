@@ -33,7 +33,7 @@ public abstract class SmartPhotoSliderPhotoAdapter extends BaseSmartPhotoSliderA
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
-        final TouchImageView touchImageView=getImage(new TouchImageView(getContext()),position);
+        final TouchImageView touchImageView=getImage(new TouchImageView(container.getContext()),position);
         touchImageView.setZoomEnabled(isZoomEnable());
 
             touchImageView.setOnTouchImageViewListener(new TouchImageView.OnTouchImageViewListener() {
