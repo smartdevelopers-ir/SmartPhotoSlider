@@ -2,6 +2,8 @@ package ir.smartdevelopers.photoslider;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -11,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
@@ -31,6 +32,7 @@ public class SmartPhotoSliderView extends RelativeLayout {
     private long animationDuration=50;
     private boolean zoomEnable =true;
     private int mProgressColor;
+    private int mActiveDotColor,mInactivateDotColor;
     public SmartPhotoSliderView(Context context) {
         super(context);
         init(context,null);
@@ -55,10 +57,14 @@ public class SmartPhotoSliderView extends RelativeLayout {
     private void init(Context context,AttributeSet attributeSet){
         inflate(context,R.layout.smart_view_pager_layout,this);
         viewPager = findViewById(R.id.photo_slider_pager);
+        mActiveDotColor=ContextCompat.getColor(context,R.color.activeDot);
+        mInactivateDotColor=ContextCompat.getColor(context,R.color.deactivateDot);
         if (attributeSet!=null){
             TypedArray typedArray=context.obtainStyledAttributes(attributeSet,R.styleable.SmartPhotoSliderView);
             mProgressColor=typedArray.getColor(R.styleable.SmartPhotoSliderView_progressColor,
                     ContextCompat.getColor(context,R.color.SIS_colorLoading));
+            mActiveDotColor =typedArray.getColor(R.styleable.SmartPhotoSliderView_activeDotColor,mActiveDotColor);
+            mInactivateDotColor =typedArray.getColor(R.styleable.SmartPhotoSliderView_inactiveDotColor,mInactivateDotColor);
             typedArray.recycle();
         }
     }
@@ -91,7 +97,8 @@ public class SmartPhotoSliderView extends RelativeLayout {
             prepareDots(imageCount);
 
             int current = viewPager.getCurrentItem();
-            ((ImageView) dotContainer.getChildAt(current)).setImageResource(R.drawable.ic_dot_active);
+
+            ((ImageView) dotContainer.getChildAt(current)).setImageDrawable(generateActiveDot());
             viewPager.clearOnPageChangeListeners();
             viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
@@ -126,11 +133,26 @@ public class SmartPhotoSliderView extends RelativeLayout {
                 imageView.animate().scaleX(scaleSmallDot);
 
             }
-            imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.ic_dot_deactivate));
+
+            imageView.setImageDrawable(generateInactivateDot());
             dotContainer.addView(imageView);
         }
 
     }
+
+    private Drawable generateActiveDot() {
+        GradientDrawable activeDot=new GradientDrawable();
+        activeDot.setColor(mActiveDotColor);
+        activeDot.setShape(GradientDrawable.OVAL);
+        return activeDot;
+    }
+    private Drawable generateInactivateDot() {
+        GradientDrawable inactiveDot=new GradientDrawable();
+        inactiveDot.setColor(mInactivateDotColor);
+        inactiveDot.setShape(GradientDrawable.OVAL);
+        return inactiveDot;
+    }
+
     private void changeDotsPos(int currentPos,int totalCount){
         int direction = 1;
         if (currentPos - lastPos < 0) {
@@ -225,15 +247,24 @@ public class SmartPhotoSliderView extends RelativeLayout {
 
     }
     private void activeDot(ImageView imageView){
-        imageView.setImageResource(R.drawable.ic_dot_active);
+        imageView.setImageDrawable(generateActiveDot());
         imageView.animate().setDuration(animationDuration).scaleX(scaleActive);
         imageView.animate().setDuration(animationDuration).scaleY(scaleActive);
     }
     private void deactivateDot(ImageView imageView){
-        imageView.setImageResource(R.drawable.ic_dot_deactivate);
+        imageView.setImageDrawable(generateInactivateDot());
         imageView.animate().setDuration(animationDuration).scaleX(scaleNormal);
         imageView.animate().setDuration(animationDuration).scaleY(scaleNormal);
     }
+
+    public void setActiveDotColor(int activeDotColor) {
+        mActiveDotColor = activeDotColor;
+    }
+
+    public void setInactivateDotColor(int inactivateDotColor) {
+        mInactivateDotColor = inactivateDotColor;
+    }
+
     private void scaleDownDot(ImageView imageView){
         imageView.animate().setDuration(animationDuration).scaleX(scaleSmallDot);
         imageView.animate().setDuration(animationDuration).scaleY(scaleSmallDot);

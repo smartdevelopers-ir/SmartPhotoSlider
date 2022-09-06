@@ -4,6 +4,8 @@
         <attr name="android:width" />
         <attr name="android:height" />
         <attr name="progressColor" format="color"/>
+        <attr name="activeDotColor" format="color"/>
+        <attr name="inactiveDotColor" format="color"/>
     </declare-styleable>
 
 </resources>
