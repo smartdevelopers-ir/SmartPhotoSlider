@@ -324,6 +324,7 @@ public class SmartPhotoSliderView extends RelativeLayout {
     @Override
     protected void onAttachedToWindow() {
         if (mSliderInterval > 0 && !stateSaved){
+            mLastStartedState=true;
             startSliding();
         }
         super.onAttachedToWindow();
@@ -422,6 +423,9 @@ public class SmartPhotoSliderView extends RelativeLayout {
             stopSliding();
             return;
         }
+        if (mAdapter==null){
+            return;
+        }
         if (mChangeSlideHandler==null){
             mChangeSlideHandler=new Handler();
         }
@@ -430,6 +434,9 @@ public class SmartPhotoSliderView extends RelativeLayout {
                 @Override
                 public void run() {
                     if (!mSlidingStarted){
+                        return;
+                    }
+                    if (mAdapter==null){
                         return;
                     }
                     int count = mAdapter.getCount();
