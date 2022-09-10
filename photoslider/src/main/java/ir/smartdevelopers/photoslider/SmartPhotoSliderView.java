@@ -412,7 +412,7 @@ public class SmartPhotoSliderView extends RelativeLayout {
     }
 
 
-    private void startSliding(){
+    public void startSliding(){
         if (mSliderInterval<=0){
             return;
         }
@@ -420,7 +420,7 @@ public class SmartPhotoSliderView extends RelativeLayout {
             return;
         }
         if (getVisibility() != VISIBLE){
-            stopSliding();
+            mLastStartedState=true;
             return;
         }
         if (mAdapter==null){
