@@ -11,6 +11,7 @@ import androidx.viewpager.widget.ViewPager;
  class SmartPhotoSliderViewPager extends ViewPager {
     /* for disabling sliding for example when image is zoomed*/
      private boolean enable=true;
+     private OnUserChangeListener mOnUserChangeListener;
 
     public SmartPhotoSliderViewPager(@NonNull Context context) {
         super(context);
@@ -23,6 +24,9 @@ import androidx.viewpager.widget.ViewPager;
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         try {
+            if (mOnUserChangeListener != null) {
+                mOnUserChangeListener.onUserChanged();
+            }
             if (enable) {
 
                 return super.onInterceptTouchEvent(ev);
@@ -45,11 +49,20 @@ import androidx.viewpager.widget.ViewPager;
     }
 
 
+
     public boolean isEnable() {
         return enable;
     }
 
     public void setEnable(boolean enable) {
         this.enable = enable;
+    }
+
+     public void setOnUserChangeListener(OnUserChangeListener onUserChangeListener) {
+         mOnUserChangeListener = onUserChangeListener;
+     }
+
+     public interface OnUserChangeListener{
+        void onUserChanged();
     }
 }

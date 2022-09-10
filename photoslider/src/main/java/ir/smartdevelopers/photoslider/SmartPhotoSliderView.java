@@ -5,14 +5,24 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.SparseArray;
+import android.view.AbsSavedState;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
@@ -33,6 +43,12 @@ public class SmartPhotoSliderView extends RelativeLayout {
     private boolean zoomEnable =true;
     private int mProgressColor;
     private int mActiveDotColor,mInactivateDotColor;
+    private Handler mChangeSlideHandler;
+    private long mSliderInterval;
+    private Runnable mSlidingRunnable;
+    private boolean mSlidingStarted=false;
+    private boolean mLastStartedState=false;
+    private boolean stateSaved=false;
     public SmartPhotoSliderView(Context context) {
         super(context);
         init(context,null);
@@ -67,6 +83,7 @@ public class SmartPhotoSliderView extends RelativeLayout {
             mInactivateDotColor =typedArray.getColor(R.styleable.SmartPhotoSliderView_inactiveDotColor,mInactivateDotColor);
             typedArray.recycle();
         }
+        mSliderInterval=0;
     }
 
     public void setIndicator(SmartIndicator smartIndicator) {
@@ -114,6 +131,12 @@ public class SmartPhotoSliderView extends RelativeLayout {
                 @Override
                 public void onPageScrollStateChanged(int state) {
 
+                }
+            });
+            viewPager.setOnUserChangeListener(new SmartPhotoSliderViewPager.OnUserChangeListener() {
+                @Override
+                public void onUserChanged() {
+                    stopSliding();
                 }
             });
         }
@@ -290,5 +313,159 @@ public class SmartPhotoSliderView extends RelativeLayout {
     public void setCurrentPosition(int position){
         mCurrentPosition=position;
         viewPager.setCurrentItem(position);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        stopSliding();
+        super.onDetachedFromWindow();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        if (mSliderInterval > 0 && !stateSaved){
+            startSliding();
+        }
+        super.onAttachedToWindow();
+    }
+
+
+    @Override
+    public void onVisibilityAggregated(boolean isVisible) {
+        super.onVisibilityAggregated(isVisible);
+        if (isVisible){
+            if (mLastStartedState){
+                startSliding();
+            }
+        }else {
+            mLastStartedState = mSlidingStarted;
+            stopSliding();
+        }
+
+
+    }
+
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable parcelable = super.onSaveInstanceState();
+        SavedState ss = new SavedState(parcelable);
+        ss.isStarted=mSlidingStarted;
+
+        if (getId() ==0){
+            setId(View.generateViewId());
+        }
+        int childCount=getChildCount();
+        for (int i=0;i<childCount;i++){
+            if (getChildAt(i).getId()==0){
+                getChildAt(i).setId(View.generateViewId());
+            }
+        }
+        return ss;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (state instanceof SavedState){
+            SavedState ss = (SavedState) state;
+            super.onRestoreInstanceState(state);
+            boolean started = ss.isStarted;
+            viewPager.setCurrentItem(ss.currentPos,false);
+            stateSaved=true;
+            if (started){
+                startSliding();
+            }
+            return;
+        }
+        super.onRestoreInstanceState(state);
+    }
+
+    public static class SavedState extends BaseSavedState {
+        boolean isStarted;
+        int currentPos;
+        protected SavedState(Parcel source) {
+            super(source);
+            isStarted = source.readInt() == 1;
+            currentPos = source.readInt();
+        }
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+            dest.writeInt(isStarted ? 1 :0);
+            dest.writeInt(currentPos);
+        }
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
+    }
+
+
+    private void startSliding(){
+        if (mSliderInterval<=0){
+            return;
+        }
+        if (mSlidingStarted){
+            return;
+        }
+        if (getVisibility() != VISIBLE){
+            stopSliding();
+            return;
+        }
+        if (mChangeSlideHandler==null){
+            mChangeSlideHandler=new Handler();
+        }
+        if (mSlidingRunnable == null) {
+            mSlidingRunnable=new Runnable() {
+                @Override
+                public void run() {
+                    if (!mSlidingStarted){
+                        return;
+                    }
+                    int count = mAdapter.getCount();
+                    int current=viewPager.getCurrentItem();
+                    int pos ;
+                    if (current < count-1){
+                        pos = current+1;
+                    }else {
+                        pos = 0;
+                    }
+                    viewPager.setCurrentItem(pos);
+                    mChangeSlideHandler.postDelayed(this,mSliderInterval);
+                }
+            };
+        }
+        mChangeSlideHandler.postDelayed(mSlidingRunnable,mSliderInterval);
+        mSlidingStarted=true;
+    }
+    private  void  stopSliding(){
+        if (mSlidingRunnable != null && mChangeSlideHandler != null) {
+            mChangeSlideHandler.removeCallbacks(mSlidingRunnable);
+
+        }
+        mSlidingStarted=false;
+    }
+    private void reScheduleSliding(){
+        if (mSlidingRunnable != null && mChangeSlideHandler != null) {
+            mChangeSlideHandler.removeCallbacks(mSlidingRunnable);
+        }
+        startSliding();
+    }
+    public long getSliderInterval() {
+        return mSliderInterval;
+    }
+
+    public void setSliderInterval(long sliderInterval) {
+        mSliderInterval = sliderInterval;
     }
 }
