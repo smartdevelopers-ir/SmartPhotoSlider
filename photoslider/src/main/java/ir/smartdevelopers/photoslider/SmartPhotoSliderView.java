@@ -36,10 +36,8 @@ public class SmartPhotoSliderView extends RelativeLayout {
     private int lastPos=0;
     private int shiftPos=0;
     private int mCurrentPosition=0;
-    private float scaleSmallDot=0.65f;
-    private float scaleActive=1.15f;
-    private float scaleNormal=1;
-    private long animationDuration=50;
+    private final float scaleSmallDot=0.65f;
+    private final long animationDuration=50;
     private boolean zoomEnable =true;
     private int mProgressColor;
     private int mActiveDotColor,mInactivateDotColor;
@@ -271,11 +269,13 @@ public class SmartPhotoSliderView extends RelativeLayout {
     }
     private void activeDot(ImageView imageView){
         imageView.setImageDrawable(generateActiveDot());
+        float scaleActive = 1.15f;
         imageView.animate().setDuration(animationDuration).scaleX(scaleActive);
         imageView.animate().setDuration(animationDuration).scaleY(scaleActive);
     }
     private void deactivateDot(ImageView imageView){
         imageView.setImageDrawable(generateInactivateDot());
+        float scaleNormal = 1;
         imageView.animate().setDuration(animationDuration).scaleX(scaleNormal);
         imageView.animate().setDuration(animationDuration).scaleY(scaleNormal);
     }
